@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "omni-fast",
+  "main": "worker/index.ts",
+  "compatibility_date": "2025-11-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "omni-fast",
+      "database_id": "local-omni-fast",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSIONS",
+      "id": "local-omni-sessions"
+    }
+  ],
+  "triggers": {
+    "crons": ["0 */2 * * *"]
+  },
+  "vars": {
+    "OMNI_ORIGIN": "https://omni.top-academy.ru",
+    "SESSION_DAYS": "30",
+    "ADMIN_USERNAMES": "kalinin_aa"
+  }
+}

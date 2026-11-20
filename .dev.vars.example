@@ -1,0 +1,5 @@
+# Скопируй в .dev.vars (не коммить)
+SESSION_SECRET=change-me-to-a-long-random-string
+OMNI_ORIGIN=https://omni.top-academy.ru
+# Опционально: TTL нашей сессии в днях (по умолчанию 30)
+SESSION_DAYS=30

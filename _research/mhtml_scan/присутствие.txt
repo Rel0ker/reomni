@@ -1,0 +1,10 @@
+TITLE: 
+UI-SREF: bind.materials, classWork, content_author, dossier, exams, groupsPage, homeWork, news, portfolio, presents, presents.addHomeWork, profile, report, schedulePage, students.list, tasks, traffic
+ACTIVE: bind.materials, classWork, content_author, dossier, exams, groupsPage, homeWork, news, portfolio, presents, report, schedulePage, students.list, tasks, traffic
+CTRL: baseCtrl, profileCtrl, signalCtrl
+CYR top: 
+HASH: 
+TPL: 
+API: auth/logout, bind/materials, dossier/social_sprite, presents/addHomeWork, students/comment, students/list
+
+SNIPPET:
