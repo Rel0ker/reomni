@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
 type Group = { id_tgroups: string; name_tgroups: string };
 type Student = Record<string, unknown>;
@@ -93,7 +94,7 @@ export function StudentsPage({
 
   return (
     <div className="app-shell">
-      <div className="brand">Студенты</div>
+      <PageBrand k="nav.students" />
       <select
         className="bare-select"
         value={groupId}

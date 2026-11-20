@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
 export function PortfolioPage({
   onToast,
@@ -41,7 +42,7 @@ export function PortfolioPage({
 
   return (
     <div className="app-shell">
-      <div className="brand">Портфолио</div>
+      <PageBrand k="nav.portfolio" />
       {loading ? <div className="skeleton" /> : (
         <>
           {requests.length > 0 ? (

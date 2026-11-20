@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
 type Row = Record<string, unknown>;
 
@@ -55,7 +56,7 @@ export function TrafficPage({
 
   return (
     <div className="app-shell">
-      <div className="brand">Проблемные</div>
+      <PageBrand k="nav.traffic" />
       {loading ? (
         <div className="skeleton" />
       ) : items.length === 0 ? (

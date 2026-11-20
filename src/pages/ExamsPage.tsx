@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PageBrand } from "../components/PageBrand";
+import type { DictKey } from "../i18n/dict";
+import { useT } from "../i18n/PrefsContext";
 import { api } from "../lib/api";
 
 type ExamBrief = {
@@ -67,12 +70,12 @@ type Diploma = {
 
 type Tab = "current" | "future" | "past" | "course" | "diploma";
 
-const TAB_LABEL: Record<Tab, string> = {
-  current: "Текущие",
-  future: "Будущие",
-  past: "Прошедшие",
-  course: "Курсовые",
-  diploma: "Диплом",
+const TAB_LABEL: Record<Tab, DictKey> = {
+  current: "exams.current",
+  future: "exams.future",
+  past: "exams.past",
+  course: "exams.course",
+  diploma: "exams.diploma",
 };
 
 function asList<T>(raw: unknown): T[] {
@@ -168,6 +171,7 @@ export function ExamsPage({
 }: {
   onToast: (t: string, tone?: "good" | "bad" | "neutral") => void;
 }) {
+  const tr = useT();
   const [tab, setTab] = useState<Tab>("current");
   const [past, setPast] = useState<ExamBrief[]>([]);
   const [current, setCurrent] = useState<ExamBrief[]>([]);
@@ -384,23 +388,23 @@ export function ExamsPage({
 
   return (
     <div className="app-shell exams-page">
-      <div className="brand">Экзамены</div>
+      <PageBrand k="nav.exams" />
 
       <div className="admin-tabs exams-tabs">
-        {(Object.keys(TAB_LABEL) as Tab[]).map((t) => (
+        {(Object.keys(TAB_LABEL) as Tab[]).map((tabKey) => (
           <button
-            key={t}
+            key={tabKey}
             type="button"
-            className={`admin-tab${tab === t ? " on" : ""}`}
+            className={`admin-tab${tab === tabKey ? " on" : ""}`}
             onClick={() => {
-              setTab(t);
+              setTab(tabKey);
               setOpenId(null);
               setDetails(null);
             }}
           >
-            {TAB_LABEL[t]}
-            {counts[t] > 0 ? (
-              <span className="exams-tab-count">{counts[t]}</span>
+            {tr(TAB_LABEL[tabKey])}
+            {counts[tabKey] > 0 ? (
+              <span className="exams-tab-count">{counts[tabKey]}</span>
             ) : null}
           </button>
         ))}
@@ -410,7 +414,7 @@ export function ExamsPage({
 
       {!loading && (tab === "current" || tab === "future" || tab === "past") ? (
         exams.length === 0 ? (
-          <div className="empty">Нет экзаменов</div>
+          <div className="empty">{tr("exams.empty")}</div>
         ) : (
           <div className="stack-tight">
             {exams.map((exam) => {
@@ -452,7 +456,7 @@ export function ExamsPage({
                       {detailsLoading || !details ? (
                         <div className="skeleton" />
                       ) : details.exam.length === 0 ? (
-                        <div className="empty">Нет студентов</div>
+                        <div className="empty">{tr("exams.noStudents")}</div>
                       ) : (
                         <div className="exam-studs">
                           {details.exam.map((stud, idx) => {
@@ -530,7 +534,7 @@ export function ExamsPage({
 
       {!loading && tab === "course" ? (
         courseWorks.length === 0 ? (
-          <div className="empty">Нет курсовых</div>
+          <div className="empty">{tr("exams.noCourse")}</div>
         ) : (
           <div className="stack-tight">
             {courseWorks.map((row) => {
@@ -581,7 +585,7 @@ export function ExamsPage({
 
       {!loading && tab === "diploma" ? (
         diplomas.length === 0 ? (
-          <div className="empty">Нет дипломных</div>
+          <div className="empty">{tr("exams.noDiploma")}</div>
         ) : (
           <div className="stack-tight">
             {diplomas.map((row) => {

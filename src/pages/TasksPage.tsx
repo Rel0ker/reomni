@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
 type Task = Record<string, unknown>;
 
@@ -43,7 +44,7 @@ export function TasksPage({
 
   return (
     <div className="app-shell">
-      <div className="brand">Задачи</div>
+      <PageBrand k="nav.tasks" />
       <div className="was">
         <button className={tab === "admin" ? "on-p" : ""} onClick={() => setTab("admin")}>
           Админ

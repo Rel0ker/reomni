@@ -1,7 +1,9 @@
 import { FormEvent, useState } from "react";
+import { usePrefs } from "../i18n/PrefsContext";
 import { api } from "../lib/api";
 
 export function LoginPage({ onDone }: { onDone: () => void }) {
+  const { t, lang, setLang, theme, toggleTheme } = usePrefs();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,7 +17,7 @@ export function LoginPage({ onDone }: { onDone: () => void }) {
       await api.login(username.trim(), password);
       onDone();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка входа");
+      setError(err instanceof Error ? err.message : t("login.error"));
     } finally {
       setLoading(false);
     }
@@ -23,6 +25,17 @@ export function LoginPage({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="login">
+      <button
+        type="button"
+        className="theme-fab login-theme-fab"
+        aria-label={
+          theme === "dark" ? t("theme.toggleLight") : t("theme.toggleDark")
+        }
+        onClick={toggleTheme}
+      >
+        {theme === "dark" ? "☀" : "☾"}
+      </button>
+
       <div className="login-stage">
         <div className="login-brand">Omni</div>
 
@@ -31,7 +44,7 @@ export function LoginPage({ onDone }: { onDone: () => void }) {
             <input
               className="login-input"
               autoComplete="username"
-              placeholder="Логин"
+              placeholder={t("login.username")}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -40,14 +53,14 @@ export function LoginPage({ onDone }: { onDone: () => void }) {
               className="login-input"
               type="password"
               autoComplete="current-password"
-              placeholder="Пароль"
+              placeholder={t("login.password")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
             {error ? <div className="err">{error}</div> : null}
             <button className="login-submit" disabled={loading}>
-              {loading ? "…" : "Войти"}
+              {loading ? "…" : t("login.submit")}
             </button>
           </form>
         </div>
@@ -58,15 +71,25 @@ export function LoginPage({ onDone }: { onDone: () => void }) {
           target="_blank"
           rel="noreferrer"
         >
-          Восстановление пароля
+          {t("login.recover")}
         </a>
       </div>
 
-      <div className="login-langs" aria-label="Язык">
-        <span className="on">RU</span>
-        <span>EN</span>
-        <span>ES</span>
-        <span>TR</span>
+      <div className="login-langs" aria-label={t("login.lang")}>
+        <button
+          type="button"
+          className={lang === "ru" ? "on" : undefined}
+          onClick={() => setLang("ru")}
+        >
+          RU
+        </button>
+        <button
+          type="button"
+          className={lang === "en" ? "on" : undefined}
+          onClick={() => setLang("en")}
+        >
+          EN
+        </button>
       </div>
     </div>
   );

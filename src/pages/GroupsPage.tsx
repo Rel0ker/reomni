@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { PageBrand } from "../components/PageBrand";
+import { useT } from "../i18n/PrefsContext";
 import { api } from "../lib/api";
 
 type Spec = {
@@ -80,6 +82,7 @@ export function GroupsPage({
 }: {
   onToast: (t: string, tone?: "good" | "bad" | "neutral") => void;
 }) {
+  const t = useT();
   const [groups, setGroups] = useState<Record<string, GroupSpec>>({});
   const [groupId, setGroupId] = useState("");
   const [subjectKey, setSubjectKey] = useState("");
@@ -193,7 +196,7 @@ export function GroupsPage({
 
   return (
     <div className="app-shell journal-page att-page">
-      <div className="brand">Посещаемость</div>
+      <PageBrand k="nav.groups" />
 
       <div className="journal-filters">
         <select
@@ -229,13 +232,13 @@ export function GroupsPage({
 
       <div className="att-legend">
         <span>
-          <i className="att-chip att-was" /> Был
+          <i className="att-chip att-was" /> {t("groups.was")}
         </span>
         <span>
-          <i className="att-chip att-late" /> Опоздал
+          <i className="att-chip att-late" /> {t("groups.late")}
         </span>
         <span>
-          <i className="att-chip att-no" /> Не был
+          <i className="att-chip att-no" /> {t("groups.absent")}
         </span>
         <span className="att-mark-legend">
           <b className="m-hw">ДЗ</b>
@@ -279,13 +282,13 @@ export function GroupsPage({
       {loading ? (
         <div className="skeleton" />
       ) : !visible.length || !visibleStudents.length ? (
-        <div className="empty">Пусто</div>
+        <div className="empty">{t("common.empty")}</div>
       ) : (
         <div className="journal-scroll">
           <table className="journal-table att-table">
             <thead>
               <tr>
-                <th className="sticky-col">Студент</th>
+                <th className="sticky-col">{t("groups.student")}</th>
                 {visible.map((col, i) => (
                   <th key={`${col.date_vizit}-${col.nlenta}`}>
                     <div className="col-date">
@@ -379,8 +382,8 @@ export function GroupsPage({
           onClick={() => setTransferred((v) => !v)}
         >
           {transferred
-            ? "Скрыть переведённых студентов"
-            : "Показать переведённых студентов"}
+            ? t("groups.hideTransferred")
+            : t("groups.showTransferred")}
         </button>
       ) : null}
     </div>

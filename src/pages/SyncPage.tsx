@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
 export function SyncPage({
   onToast,
@@ -45,7 +46,7 @@ export function SyncPage({
 
   return (
     <div className="app-shell">
-      <div className="brand">Синк</div>
+      <PageBrand k="nav.sync" />
 
       <div className="sync-stat">
         <div className="cell">

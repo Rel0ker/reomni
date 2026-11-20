@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
 type NewsItem = Record<string, unknown>;
 
@@ -42,7 +43,7 @@ export function NewsPage({
 
   return (
     <div className="app-shell">
-      <div className="brand">Новости</div>
+      <PageBrand k="nav.news" />
       {deps.length > 0 ? (
         <select
           className="bare-select"

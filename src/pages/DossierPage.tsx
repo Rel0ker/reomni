@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
 export function DossierPage({
   onToast,
@@ -26,7 +27,7 @@ export function DossierPage({
 
   return (
     <div className="app-shell">
-      <div className="brand">Досье</div>
+      <PageBrand k="nav.dossier" />
       {loading ? <div className="skeleton" /> : entries.length === 0 ? (
         <div className="empty">Пусто</div>
       ) : (

@@ -118,9 +118,66 @@ function resolveSchedule(
   return null;
 }
 
+function prettyFileLabel(raw: string) {
+  try {
+    const path = decodeURIComponent(raw.split("?")[0] || raw);
+    const base = path.split("/").pop() || path;
+    return base.replace(/\+/g, " ").trim() || raw;
+  } catch {
+    return raw;
+  }
+}
+
 function materialTitle(m: PresentMaterial | null | undefined, fallback: string) {
   if (!m) return null;
-  return String(m.name || m.theme || m.file_name || m.filename || fallback);
+  const raw = String(
+    m.name || m.theme || m.file_name || m.filename || fallback,
+  );
+  if (/^https?:\/\//i.test(raw) || raw.includes("/")) {
+    return prettyFileLabel(raw);
+  }
+  return raw;
+}
+
+function studentInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  return parts
+    .slice(0, 2)
+    .map((p) => p[0]!)
+    .join("")
+    .toUpperCase();
+}
+
+function isPlaceholderPhoto(src?: string | null) {
+  if (!src) return true;
+  return /favicon|avatarka\.svg|placeholder|default.*avatar/i.test(src);
+}
+
+function StudentAvatar({
+  name,
+  src,
+}: {
+  name: string;
+  src?: string | null;
+}) {
+  const [broken, setBroken] = useState(false);
+  const showImg = !broken && !isPlaceholderPhoto(src);
+  if (!showImg) {
+    return (
+      <div className="avatar avatar-fallback" aria-hidden>
+        {studentInitials(name)}
+      </div>
+    );
+  }
+  return (
+    <img
+      className="avatar"
+      src={src!}
+      alt=""
+      onError={() => setBroken(true)}
+    />
+  );
 }
 
 function parseLessonNo(theme: string) {
@@ -922,7 +979,14 @@ export function PairPage({
           ) : null}
 
           <div className="pair-lesson-head">
-            <div className="pair-lesson-label">Тема урока</div>
+            <div className="pair-theme-block">
+              <div className="pair-lesson-label">Тема урока</div>
+              {themeMode === "view" ? (
+                <div className="pair-theme-view">
+                  {theme ? theme : <span className="mute">Тема ещё не задана</span>}
+                </div>
+              ) : null}
+            </div>
             <div className="pair-lesson-links">
               {methodSpecId ? (
                 <Link className="text-link" to={`/materials?spec=${methodSpecId}`}>
@@ -937,11 +1001,7 @@ export function PairPage({
             </div>
           </div>
 
-          {themeMode === "view" ? (
-            <div className="pair-theme-view">
-              {theme ? theme : <span className="mute">Тема ещё не задана</span>}
-            </div>
-          ) : (
+          {themeMode !== "view" ? (
             <div className="pair-theme-edit">
               {isPlanned ? (
                 themes.length > 0 ? (
@@ -1031,7 +1091,7 @@ export function PairPage({
                 </button>
               </div>
             </div>
-          )}
+          ) : null}
 
           <div className="pair-assign">
             <div className="pair-assign-title-row">
@@ -1245,16 +1305,19 @@ export function PairPage({
         </>
       ) : (
         <>
+          <div className="pair-roster-head">
+            <span>Студенты</span>
+            <span className="mute">{students.length}</span>
+          </div>
           <div className="student-list">
             {students.map((stud, idx) => {
               const was = Number(stud.was);
               return (
                 <div className="student" key={stud.id_stud}>
                   <div className="student-head">
-                    <img
-                      className="avatar"
-                      src={stud.photo_pas || "/favicon.svg"}
-                      alt=""
+                    <StudentAvatar
+                      name={stud.fio_stud}
+                      src={stud.photo_pas}
                     />
                     <div className="student-name">{stud.fio_stud}</div>
                   </div>

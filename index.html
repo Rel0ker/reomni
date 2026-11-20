@@ -18,6 +18,32 @@
       rel="stylesheet"
     />
     <title>Omni</title>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("omni_fast_theme");
+          var lang = localStorage.getItem("omni_fast_lang");
+          if (theme !== "dark" && theme !== "light") {
+            theme =
+              window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          }
+          document.documentElement.dataset.theme = theme;
+          if (lang === "en" || lang === "ru") {
+            document.documentElement.lang = lang;
+          }
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute(
+              "content",
+              theme === "dark" ? "#05070b" : "#07131F",
+            );
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

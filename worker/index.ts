@@ -13,9 +13,16 @@ import {
   isAdminUser,
   logAuthEvent,
 } from "./admin";
+import {
+  createFeedback,
+  getFeedbackFile,
+  listFeedback,
+  markFeedback,
+} from "./feedback";
 import { issueOmniHomework } from "./homework-issue";
 import {
   fetchCitiesFromHome,
+  friendlyOmniMessage,
   omniGet,
   omniLogin,
   omniPost,
@@ -407,6 +414,64 @@ app.post("/api/admin/reset-sync-errors", requireAdmin, async (c) => {
   return c.json({ ok: true, ...(await adminResetSyncErrors(c.env)) });
 });
 
+app.get("/api/admin/feedback", requireAdmin, async (c) => {
+  const limit = Number(c.req.query("limit") || "80");
+  return c.json({ data: await listFeedback(c.env, limit) });
+});
+
+app.get("/api/admin/feedback/:id/file", requireAdmin, async (c) => {
+  const file = await getFeedbackFile(c.env, c.req.param("id"));
+  if (!file) return c.json({ error: "Файл не найден" }, 404);
+  return new Response(file.bytes, {
+    status: 200,
+    headers: {
+      "Content-Type": file.fileType,
+      "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
+      "Cache-Control": "private, max-age=3600",
+    },
+  });
+});
+
+app.post("/api/admin/feedback/:id/status", requireAdmin, async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const status = String((body as { status?: string }).status || "");
+  if (status !== "new" && status !== "seen" && status !== "done") {
+    return c.json({ error: "Неверный статус" }, 400);
+  }
+  await markFeedback(c.env, c.req.param("id"), status);
+  return c.json({ ok: true });
+});
+
+app.post("/api/feedback", requireSession, async (c) => {
+  const session = c.get("session");
+  let form: FormData;
+  try {
+    form = await c.req.formData();
+  } catch {
+    return c.json({ error: "Ожидается multipart/form-data" }, 400);
+  }
+  const message = String(form.get("message") || "");
+  const contact = String(form.get("contact") || "");
+  const page = String(form.get("page") || "");
+  const rawFile = form.get("file");
+  const file =
+    rawFile instanceof File && rawFile.size > 0 ? rawFile : null;
+  try {
+    const created = await createFeedback(c.env, session, {
+      message,
+      contact,
+      page,
+      file,
+    });
+    return c.json({ ok: true, ...created });
+  } catch (e) {
+    return c.json(
+      { error: e instanceof Error ? e.message : "Ошибка" },
+      400,
+    );
+  }
+});
+
 app.get("/api/sync/status", requireSession, async (c) => {
   const session = c.get("session");
   const rows = await c.env.DB.prepare(
@@ -421,6 +486,12 @@ app.post("/api/sync/flush", requireSession, async (c) => {
   const session = c.get("session");
   return c.json(await flushPendingForSession(c.env, session.id));
 });
+
+function isOmniErrorPayload(data: unknown) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+  const row = data as { status?: unknown; name?: unknown };
+  return row.status === 500 || row.name === "Internal Server Error";
+}
 
 app.post("/api/omni/:name", requireSession, async (c) => {
   const name = c.req.param("name");
@@ -455,13 +526,10 @@ app.post("/api/omni/:name", requireSession, async (c) => {
           cached: true,
           stale: true,
           updatedAt: cached.updatedAt,
-          warning: e instanceof Error ? e.message : "Omni недоступен",
+          warning: friendlyOmniMessage(e, true),
         });
       }
-      return c.json(
-        { error: e instanceof Error ? e.message : "Ошибка Omni" },
-        502,
-      );
+      return c.json({ error: friendlyOmniMessage(e) }, 502);
     }
   }
 
@@ -489,6 +557,16 @@ app.post("/api/omni/:name", requireSession, async (c) => {
       session.omniCookie = result.jar;
       await saveSession(c.env, session);
     }
+    if (result.status >= 400 || isOmniErrorPayload(result.data)) {
+      const message =
+        result.data &&
+        typeof result.data === "object" &&
+        "message" in result.data &&
+        typeof (result.data as { message?: unknown }).message === "string"
+          ? (result.data as { message: string }).message
+          : `Omni ответил ${result.status || 500}`;
+      throw new Error(message);
+    }
     await cacheSet(c.env, session.id, cacheKey, result.data);
     return c.json({
       data: result.data,
@@ -502,13 +580,10 @@ app.post("/api/omni/:name", requireSession, async (c) => {
         cached: true,
         stale: true,
         updatedAt: cached.updatedAt,
-        warning: e instanceof Error ? e.message : "Omni недоступен",
+        warning: friendlyOmniMessage(e, true),
       });
     }
-    return c.json(
-      { error: e instanceof Error ? e.message : "Ошибка Omni" },
-      502,
-    );
+    return c.json({ error: friendlyOmniMessage(e) }, 502);
   }
 });
 

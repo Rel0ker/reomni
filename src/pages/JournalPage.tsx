@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
 type GroupSpec = {
   id_tgroups: string;
@@ -238,7 +239,7 @@ export function JournalPage({
 
   return (
     <div className="app-shell journal-page">
-      <div className="brand">Оценки</div>
+      <PageBrand k="nav.journal" />
 
       <div className="journal-filters">
         <select

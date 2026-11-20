@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
 type Named = {
   id?: string | number;
@@ -517,7 +518,7 @@ export function MaterialsPage({
 
   return (
     <div className="app-shell materials-page">
-      <div className="brand">Методички</div>
+      <PageBrand k="nav.materials" />
 
       <div className="mat-picker" ref={pickerRef}>
         <button

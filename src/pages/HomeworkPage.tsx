@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { PageBrand } from "../components/PageBrand";
+import { useT } from "../i18n/PrefsContext";
 import { api } from "../lib/api";
 
 type Spec = {
@@ -168,6 +170,7 @@ export function HomeworkPage({
 }: {
   onToast: (t: string, tone?: "good" | "bad" | "neutral") => void;
 }) {
+  const tHw = useT();
   const [ospr, setOspr] = useState(0);
   const [allGroups, setAllGroups] = useState(false);
   const [transferred, setTransferred] = useState(false);
@@ -522,7 +525,7 @@ export function HomeworkPage({
 
   return (
     <div className="app-shell journal-page hw-page">
-      <div className="brand">ДЗ</div>
+      <PageBrand k="nav.homework" />
 
       <div className="journal-toolbar">
         <div className="was journal-type">
@@ -775,8 +778,8 @@ export function HomeworkPage({
         onClick={() => setTransferred((v) => !v)}
       >
         {transferred
-          ? "Скрыть переведённых студентов"
-          : "Показать переведённых студентов"}
+          ? tHw("groups.hideTransferred")
+          : tHw("groups.showTransferred")}
       </button>
 
       {active ? (

@@ -32,6 +32,23 @@ export class OmniAuthError extends Error {
   }
 }
 
+/** Short text for a failed Omni call. Cached responses should say data is saved. */
+export function friendlyOmniMessage(e: unknown, cached = false) {
+  const raw = e instanceof Error ? e.message : "";
+  let text = "Не удалось подключиться к Omni";
+  if (e instanceof OmniAuthError || /сессия omni/i.test(raw)) {
+    text = raw || "Сессия Omni истекла — войдите снова";
+  } else if (/неверн(ый|ые) логин/i.test(raw)) {
+    text = raw;
+  } else if (/[А-Яа-яЁё]/.test(raw) && raw.length < 180 && !/fetch|network|timeout/i.test(raw)) {
+    text = raw;
+  }
+  if (cached && !/сохранен/i.test(text)) {
+    return `${text}. Показаны сохранённые данные.`;
+  }
+  return text;
+}
+
 export function isOmniAuthFailure(
   status: number,
   data: unknown,

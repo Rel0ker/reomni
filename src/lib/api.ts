@@ -153,6 +153,55 @@ export const api = {
       body: "{}",
     });
   },
+  sendFeedback(args: {
+    message: string;
+    contact?: string;
+    page?: string;
+    file?: File | null;
+  }) {
+    const form = new FormData();
+    form.append("message", args.message);
+    if (args.contact) form.append("contact", args.contact);
+    if (args.page) form.append("page", args.page);
+    if (args.file) form.append("file", args.file, args.file.name);
+    return fetch("/api/feedback", {
+      method: "POST",
+      credentials: "include",
+      body: form,
+    }).then(async (res) => {
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        id?: string;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+      return json;
+    });
+  },
+  adminFeedback(limit = 80) {
+    return req<{
+      data: Array<{
+        id: string;
+        username: string;
+        teachName: string | null;
+        page: string | null;
+        message: string;
+        contact: string | null;
+        fileName: string | null;
+        fileType: string | null;
+        fileSize: number | null;
+        createdAt: number;
+        status: string;
+        hasFile: boolean;
+      }>;
+    }>(`/api/admin/feedback?limit=${limit}`);
+  },
+  adminFeedbackStatus(id: string, status: "new" | "seen" | "done") {
+    return req<{ ok: boolean }>(`/api/admin/feedback/${id}/status`, {
+      method: "POST",
+      body: JSON.stringify({ status }),
+    });
+  },
   adminAuthEvents(limit = 100) {
     return req<{
       data: Array<{

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
 type ContentForm = {
   filial?: string;
@@ -47,7 +48,7 @@ export function ContentAuthorPage({
 
   return (
     <div className="app-shell">
-      <div className="brand">Правки методов</div>
+      <PageBrand k="nav.contentAuthor" />
       {loading ? (
         <div className="skeleton" />
       ) : !form ? (

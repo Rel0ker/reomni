@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { api, type Me } from "../lib/api";
+import { PageBrand } from "../components/PageBrand";
 
-type Tab = "overview" | "sessions" | "auth" | "sync";
+type Tab = "overview" | "sessions" | "auth" | "sync" | "feedback";
 
 function fmt(ts?: number | null) {
   if (!ts) return "—";
@@ -37,6 +38,9 @@ export function AdminPage({
   const [syncErrors, setSyncErrors] = useState<
     Awaited<ReturnType<typeof api.adminSyncErrors>>["data"]
   >([]);
+  const [feedback, setFeedback] = useState<
+    Awaited<ReturnType<typeof api.adminFeedback>>["data"]
+  >([]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -50,6 +54,9 @@ export function AdminPage({
       } else if (tab === "auth") {
         const r = await api.adminAuthEvents(150);
         setAuthEvents(r.data);
+      } else if (tab === "feedback") {
+        const r = await api.adminFeedback(100);
+        setFeedback(r.data);
       } else {
         const r = await api.adminSyncErrors(80);
         setSyncErrors(r.data);
@@ -87,7 +94,7 @@ export function AdminPage({
 
   return (
     <div className="app-shell admin-page">
-      <div className="brand">Админка</div>
+      <PageBrand k="nav.admin" />
       <div className="mute tiny">
         Без паролей · доступ: {me.username}
       </div>
@@ -99,6 +106,7 @@ export function AdminPage({
             ["sessions", "Сессии"],
             ["auth", "Входы"],
             ["sync", "Синк"],
+            ["feedback", "Фидбек"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -326,6 +334,74 @@ export function AdminPage({
               ))
             )}
           </div>
+        </div>
+      ) : null}
+
+      {!loading && tab === "feedback" ? (
+        <div className="admin-list">
+          {feedback.length === 0 ? (
+            <div className="empty">Пока нет сообщений</div>
+          ) : (
+            feedback.map((f) => (
+              <div className="admin-row admin-feedback-row" key={f.id}>
+                <div>
+                  <div className="student-name">
+                    {f.teachName || f.username}
+                    <span className="mute tiny"> · {f.status}</span>
+                  </div>
+                  <div className="mute tiny">
+                    {[fmt(f.createdAt), f.username, f.page, f.contact]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </div>
+                  <div className="admin-feedback-msg">{f.message}</div>
+                  {f.hasFile ? (
+                    <a
+                      className="text-link tiny"
+                      href={`/api/admin/feedback/${f.id}/file`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {f.fileName || "вложение"}
+                      {f.fileSize
+                        ? ` · ${(f.fileSize / 1024).toFixed(0)} КБ`
+                        : ""}
+                    </a>
+                  ) : null}
+                </div>
+                <div className="admin-row-actions">
+                  {f.status !== "seen" ? (
+                    <button
+                      type="button"
+                      className="text-link"
+                      disabled={busy}
+                      onClick={() =>
+                        void run("Отмечено", () =>
+                          api.adminFeedbackStatus(f.id, "seen"),
+                        )
+                      }
+                    >
+                      Прочитано
+                    </button>
+                  ) : null}
+                  {f.status !== "done" ? (
+                    <button
+                      type="button"
+                      className="text-link"
+                      disabled={busy}
+                      onClick={() =>
+                        void run("Закрыто", () =>
+                          api.adminFeedbackStatus(f.id, "done"),
+                        )
+                      }
+                    >
+                      Закрыть
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       ) : null}
     </div>

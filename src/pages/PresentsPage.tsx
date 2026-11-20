@@ -1,6 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PageBrand } from "../components/PageBrand";
+import { useT } from "../i18n/PrefsContext";
 import { api, type ScheduleLesson, type ScheduleResponse } from "../lib/api";
+
+function lessonPassed(iso: string, end?: string) {
+  if (!iso || !end) return false;
+  const [hh, mm] = end.split(":").map(Number);
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  if (iso < today) return true;
+  if (iso > today) return false;
+  return (hh || 0) * 60 + (mm || 0) <= now.getHours() * 60 + now.getMinutes();
+}
 
 function localISODate() {
   const d = new Date();
@@ -15,6 +27,7 @@ export function PresentsPage({
 }: {
   onToast: (t: string, tone?: "good" | "bad" | "neutral") => void;
 }) {
+  const t = useT();
   const nav = useNavigate();
   const [week, setWeek] = useState(0);
   const [data, setData] = useState<ScheduleResponse | null>(null);
@@ -55,7 +68,7 @@ export function PresentsPage({
     <div className="app-shell">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
         <div>
-          <div className="brand">Присутствие</div>
+          <PageBrand k="nav.presents" />
           <div className="mute" style={{ marginTop: 6, fontWeight: 650 }}>
             {today}
           </div>
@@ -77,12 +90,12 @@ export function PresentsPage({
       {loading ? (
         <div className="skeleton" />
       ) : lessons.length === 0 ? (
-        <div className="empty">Нет пар на сегодня</div>
+        <div className="empty">{t("presents.empty")}</div>
       ) : (
         lessons.map(({ lenta, lesson }) => (
           <button
             key={`${lenta}-${lesson.groups}`}
-            className="lesson"
+            className={`lesson${lessonPassed(today, lesson.l_end) ? " past" : ""}`}
             onClick={() => {
               const q = new URLSearchParams({ date: today, lenta });
               if (lesson.groups) q.set("label", lesson.groups);
